@@ -18,6 +18,7 @@ public class Post {
 
     /**
      * 帖子的唯一标识符 (主键)。
+     * 数据库自动生成。
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,6 +27,8 @@ public class Post {
     /**
      * 帖子的作者。
      * 多对一关系：多个帖子可以由同一个用户发布。
+     * 使用 {@link FetchType#LAZY} 延迟加载，以优化性能。
+     * `nullable = false` 表示帖子必须关联一个作者。
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
@@ -33,12 +36,14 @@ public class Post {
 
     /**
      * 帖子的标题。
+     * 不能为空。
      */
     @Column(nullable = false)
     private String title;
 
     /**
      * 帖子的正文内容。
+     * 使用 `columnDefinition = "TEXT"` 以支持存储较长的文本内容。
      */
     @Column(columnDefinition = "TEXT")
     private String content;
@@ -52,6 +57,7 @@ public class Post {
 
     /**
      * 帖子的发布时间。
+     * 不能为空。
      */
     @Column(name = "post_time", nullable = false)
     private LocalDateTime postTime;
@@ -59,17 +65,19 @@ public class Post {
     /**
      * 帖子下的评论列表。
      * 一对多关系：一个帖子可以有多条评论。
-     * `mappedBy` 指向 Comment 实体中的 `post` 字段。
-     * `cascade = CascadeType.ALL` 表示对帖子的操作会级联到评论。
+     * `mappedBy` 指向 Comment 实体中的 `post` 字段，表示由 Comment 实体来维护关系。
+     * `cascade = CascadeType.ALL` 表示对帖子的操作（如删除）会级联到评论。
      * `orphanRemoval = true` 表示如果评论从列表中移除，则从数据库中删除。
+     * 使用 {@link FetchType#LAZY} 延迟加载。
      */
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Comment> comments;
 
     /**
      * 帖子关联的标签列表。
      * 多对多关系：一个帖子可以有多个标签，一个标签也可以关联到多个帖子。
      * 通过中间表 `post_tag` 进行关联。
+     * 使用 {@link FetchType#LAZY} 延迟加载。
      */
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

@@ -17,6 +17,7 @@ public class MoodEntry {
 
     /**
      * 情绪记录的唯一标识符 (主键)。
+     * 数据库自动生成。
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,6 +26,8 @@ public class MoodEntry {
     /**
      * 记录所属的用户。
      * 多对一关系：多个情绪记录可以属于同一个用户。
+     * 使用 {@link FetchType#LAZY} 延迟加载，以优化性能。
+     * `nullable = false` 表示情绪记录必须关联一个用户。
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -33,6 +36,7 @@ public class MoodEntry {
     /**
      * 用户对当前心情的文字描述。
      * 例如：“今天感觉很平静”、“有点沮丧”。
+     * 不能为空。
      */
     @Column(name = "mood_description", nullable = false)
     private String moodDescription;
@@ -40,6 +44,7 @@ public class MoodEntry {
     /**
      * 用户的压力指数，通常是一个从 1 到 10 的整数。
      * 1 表示压力很小，10 表示压力很大。
+     * 不能为空。
      */
     @Column(name = "stress_level", nullable = false)
     private Integer stressLevel;
@@ -47,12 +52,14 @@ public class MoodEntry {
     /**
      * 用户的体感状态描述。
      * 例如：“身体疲惫”、“精力充沛”、“头痛”。
+     * 可以为空。
      */
     @Column(name = "physical_state")
     private String physicalState;
 
     /**
      * 情绪记录的时间戳。
+     * 不能为空。
      */
     @Column(name = "record_time", nullable = false)
     private LocalDateTime recordTime;

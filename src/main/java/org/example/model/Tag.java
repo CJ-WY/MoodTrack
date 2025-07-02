@@ -17,6 +17,7 @@ public class Tag {
 
     /**
      * 标签的唯一标识符 (主键)。
+     * 数据库自动生成。
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,6 +26,7 @@ public class Tag {
     /**
      * 标签的名称。
      * 必须唯一，例如“焦虑群体”。
+     * 用于在数据库中存储标签的文本表示。
      */
     @Column(nullable = false, unique = true)
     private String name;

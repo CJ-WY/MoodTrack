@@ -12,9 +12,12 @@ public interface MoodEntryService {
 
     /**
      * 提交用户的情绪记录。
+     * <p>
+     * 接收情绪数据，并将其保存到数据库。
+     * </p>
      *
-     * @param moodEntry 包含用户情绪数据的 MoodEntry 对象。
-     * @return 保存到数据库后的 MoodEntry 对象。
+     * @param moodEntry 包含用户情绪数据的 {@link MoodEntry} 对象。
+     * @return 保存到数据库后的 {@link MoodEntry} 对象。
      */
     MoodEntry submitMoodEntry(MoodEntry moodEntry);
 }

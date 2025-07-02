@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * 情绪群体标签的数据仓库接口。
  * <p>
- * 继承自 JpaRepository，提供了基础的 CRUD (创建、读取、更新、删除) 功能。
+ * 继承自 {@link JpaRepository}，提供了基础的 CRUD (创建、读取、更新、删除) 功能。
  * </p>
  */
 @Repository
@@ -23,7 +23,7 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
      * </p>
      *
      * @param name 标签的名称。
-     * @return 一个包含查找到的 Tag 实体的 Optional 对象，如果找不到则为空。
+     * @return 一个包含查找到的 {@link Tag} 实体的 {@link Optional} 对象，如果找不到则为空。
      */
     Optional<Tag> findByName(String name);
 }

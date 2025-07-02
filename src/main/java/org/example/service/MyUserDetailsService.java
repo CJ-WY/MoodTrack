@@ -33,7 +33,7 @@ public class MyUserDetailsService implements UserDetailsService {
      * </p>
      *
      * @param username 尝试认证的用户名。
-     * @return 包含用户认证信息的 UserDetails 对象。
+     * @return 包含用户认证信息的 {@link UserDetails} 对象。
      * @throws UsernameNotFoundException 如果数据库中找不到对应的用户。
      */
     @Override

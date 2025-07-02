@@ -25,13 +25,15 @@ public class FileStorageService {
     private static final Logger logger = LoggerFactory.getLogger(FileStorageService.class);
 
     /**
-     * 从 application.properties 中注入 S3 存储桶的名称。
+     * 从系统环境变量中注入 S3 存储桶的名称。
+     * 例如：`my-moodtrack-bucket`。
      */
     @Value("#{systemEnvironment['AWS_S3_BUCKETNAME']}")
     private String bucketName;
 
     /**
      * 注入 AmazonS3 客户端，用于与 S3 服务进行交互。
+     * 该客户端通过 {@link org.example.config.S3Config} 配置。
      */
     private final AmazonS3 s3Client;
 
@@ -76,8 +78,11 @@ public class FileStorageService {
             // 返回存储对象的公共 URL
             return s3Client.getUrl(bucketName, fileName).toString();
         } catch (IOException ex) {
-            logger.error("无法存储文件 {}. 错误信息: {}", fileName, ex.getMessage());
+            logger.error("无法存储文件 {}. 错误信息: {}", fileName, ex.getMessage(), ex); // 记录完整的异常堆栈
             throw new RuntimeException("无法存储文件 " + fileName + ". 请重试！", ex);
+        } catch (Exception ex) {
+            logger.error("存储文件 {} 时发生未知错误: {}", fileName, ex.getMessage(), ex); // 捕获其他未知异常
+            throw new RuntimeException("存储文件时发生未知错误。", ex);
         }
     }
 
@@ -92,6 +97,11 @@ public class FileStorageService {
      * @return 文件的公共访问 URL。
      */
     public String getFileUrl(String fileName) {
+        // 确保 bucketName 和 fileName 不为空，避免 NullPointerException
+        if (bucketName == null || bucketName.isEmpty() || fileName == null || fileName.isEmpty()) {
+            logger.warn("尝试获取文件URL时，bucketName或fileName为空。bucketName: {}, fileName: {}", bucketName, fileName);
+            return null; // 或者抛出 IllegalArgumentException
+        }
         return s3Client.getUrl(bucketName, fileName).toString();
     }
 }

@@ -27,6 +27,7 @@ public class Comment {
     /**
      * 评论所属的帖子。
      * 多对一关系：多条评论可以属于同一个帖子。
+     * 使用 {@link FetchType#LAZY} 延迟加载，以优化性能，避免不必要的关联查询。
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
@@ -35,6 +36,7 @@ public class Comment {
     /**
      * 发表评论的用户。
      * 多对一关系：多个评论可以由同一个用户发表。
+     * 使用 {@link FetchType#LAZY} 延迟加载。
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "commenter_id", nullable = false)
@@ -42,12 +44,14 @@ public class Comment {
 
     /**
      * 评论的具体内容。
+     * 使用 `columnDefinition = "TEXT"` 以支持存储较长的文本内容。
      */
     @Column(columnDefinition = "TEXT")
     private String content;
 
     /**
      * 评论发布的时间。
+     * 不能为空。
      */
     @Column(name = "comment_time", nullable = false)
     private LocalDateTime commentTime;
@@ -56,6 +60,7 @@ public class Comment {
      * 父评论。
      * 用于实现嵌套评论，如果此评论是对另一个评论的回复，则指向父评论。
      * 如果是直接对帖子的评论，则此字段为 null。
+     * 使用 {@link FetchType#LAZY} 延迟加载。
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id")
@@ -64,10 +69,11 @@ public class Comment {
     /**
      * 子评论列表。
      * 一对多关系：一个评论可以有多个回复 (子评论)。
-     * `mappedBy` 指向子评论中的 `parentComment` 字段。
-     * `cascade = CascadeType.ALL` 表示对父评论的操作会级联到子评论。
+     * `mappedBy` 指向子评论中的 `parentComment` 字段，表示由 Comment 实体来维护关系。
+     * `cascade = CascadeType.ALL` 表示对父评论的操作（如删除）会级联到子评论。
      * `orphanRemoval = true` 表示如果子评论从列表中移除，则从数据库中删除。
+     * 使用 {@link FetchType#LAZY} 延迟加载。
      */
-    @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Comment> replies;
 }

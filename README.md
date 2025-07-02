@@ -12,7 +12,7 @@ MoodTrack 是一个情绪管理与社区互动平台，旨在帮助用户记录�
 *   **Spring Boot 3.x**: 快速开发框架，简化 Spring 应用的搭建和部署。
 *   **Spring Data JPA / Hibernate**: ORM 框架，用于简化数据库操作和对象关系映射。
 *   **PostgreSQL**: 关系型数据库，用于存储用户、情绪记录、帖子、评论等数据。
-*   **Spring Security**: 安全框架，提供用户认证 (JWT) 和授权功能。
+*   **Spring Security**: 安全框架，提供用户认证 (JWT) 和授权功能，**并支持 Google OAuth2 登录**。
 *   **Google Gemini API (通过 API Key)**: AI 大模型服务，用于对用户情绪进行深度分析。
 *   **AWS S3**: 对象存储服务，用于存储用户上传的图片。
 *   **Lombok**: 简化 Java Bean 的开发，减少样板代码。
@@ -26,6 +26,7 @@ MoodTrack 是一个情绪管理与社区互动平台，旨在帮助用户记录�
 1.  **用户管理**
     *   **用户注册**: 新用户注册账户。
     *   **用户登录**: 现有用户通过用户名和密码登录，获取 JWT。
+    *   **Google 邮箱登录**: 用户可以通过 Google 账户登录，后端验证后颁发应用内部的 JWT。
 
 2.  **情绪记录与 AI 分析**
     *   **提交情绪记录**: 用户提交每日心情描述、压力指数、体感状态等情绪数据。
@@ -48,6 +49,7 @@ MoodTrack 是一个情绪管理与社区互动平台，旨在帮助用户记录�
     *   `email`: 邮箱 (唯一)
     *   `password`: 加密后的密码
     *   `registration_date`: 注册时间
+    *   `google_id`: Google 提供的用户唯一 ID (用于 OAuth2 登录)
 
 2.  **`mood_entry` (用户每日情绪记录)**
     *   `id`: 记录ID (主键)
@@ -100,14 +102,20 @@ MoodTrack 是一个情绪管理与社区互动平台，旨在帮助用户记录�
 
 ```properties
 # PostgreSQL Database Configuration for Supabase (using Session Pooler)
-spring.datasource.url=jdbc:postgresql://aws-0-ca-central-1.pooler.supabase.com:5432/postgres
-spring.datasource.username=postgres.fnqdzhgittuwsglrzcxx
-spring.datasource.password=moodtrack2025
+spring.datasource.url=${SPRING_DATASOURCE_URL}
+spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
+spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 # JPA/Hibernate Configuration
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+# Google OAuth2 Configuration
+spring.security.oauth2.client.registration.google.client-id=${GOOGLE_CLIENT_ID}
+spring.security.oauth2.client.registration.google.client-secret=${GOOGLE_CLIENT_SECRET}
+spring.security.oauth2.client.registration.google.redirect-uri={baseUrl}/oauth2/callback/{registrationId}
+spring.security.oauth2.client.registration.google.scope=openid,profile,email
 ```
 
 **注意**: `spring.jpa.hibernate.ddl-auto=update` 会在应用启动时自动根据实体类创建或更新数据库表结构。在生产环境中，建议使用 `validate` 或 `none`，并通过 Flyway/Liquibase 等工具进行数据库迁移管理。
@@ -120,7 +128,16 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 
 *   `AWS_ACCESS_KEY_ID`: 你的 AWS Access Key ID。
 *   `AWS_SECRET_ACCESS_KEY`: 你的 AWS Secret Access Key。
+*   `AWS_S3_BUCKETNAME`: 你的 AWS S3 存储桶名称。
+*   `AWS_S3_REGION`: 你的 AWS S3 区域。
+*   `JWT_SECRET`: 用于 JWT 签名的密钥。
 *   `GEMINI_API_KEY`: 你的 Google Gemini API Key。
+*   `SPRING_DATASOURCE_URL`: 你的 PostgreSQL 数据库连接 URL。
+*   `SPRING_DATASOURCE_USERNAME`: 你的 PostgreSQL 数据库用户名。
+*   `SPRING_DATASOURCE_PASSWORD`: 你的 PostgreSQL 数据库密码。
+*   `GOOGLE_CLIENT_ID`: 你的 Google OAuth2 Client ID。
+*   `GOOGLE_CLIENT_SECRET`: 你的 Google OAuth2 Client Secret。
+*   `GOOGLE_REDIRECT_URI`: Google OAuth2 登录成功后的重定向 URI (例如：`http://localhost:8080/oauth2/callback/google` 或 Render 部署后的 URL)。
 
 **在 IntelliJ IDEA 中设置 (推荐本地开发):**
 
@@ -133,7 +150,16 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 ```bash
 export AWS_ACCESS_KEY_ID='你的AccessKeyId'
 export AWS_SECRET_ACCESS_KEY='你的SecretAccessKey'
+export AWS_S3_BUCKETNAME='你的S3桶名称'
+export AWS_S3_REGION='你的S3区域'
+export JWT_SECRET='你的JWT密钥'
 export GEMINI_API_KEY='你的GeminiApiKey'
+export SPRING_DATASOURCE_URL='你的数据库URL'
+export SPRING_DATASOURCE_USERNAME='你的数据库用户名'
+export SPRING_DATASOURCE_PASSWORD='你的数据库密码'
+export GOOGLE_CLIENT_ID='你的GoogleClientId'
+export GOOGLE_CLIENT_SECRET='你的GoogleClientSecret'
+export GOOGLE_REDIRECT_URI='你的Google重定向URI'
 ```
 
 ### 本地运行步骤
@@ -143,7 +169,7 @@ export GEMINI_API_KEY='你的GeminiApiKey'
     git clone <项目仓库地址>
     cd MoodTrack
     ```
-2.  **配置 `application.properties`**: 根据你的 Supabase 数据库和 AWS S3 配置，更新 `src/main/resources/application.properties` 文件中的相应字段。
+2.  **配置环境变量**: 按照上述“环境变量配置”部分设置所有必要的环境变量。
 3.  **构建项目**: 使用 Maven 构建项目。
     ```bash
     mvn clean install
@@ -173,8 +199,8 @@ export GEMINI_API_KEY='你的GeminiApiKey'
 3.  点击 `New` -> `Web Service`。
 4.  选择你的项目仓库。
 5.  在配置过程中，Render 会自动检测 `render.yaml` 文件并应用其中的配置。
-    *   **数据库**: `render.yaml` 中已定义了一个名为 `moodtrack-db` 的 PostgreSQL 数据库。Render 会自动创建并链接它。
-    *   **环境变量**: 你需要在 Render Dashboard 中手动设置 `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `GEMINI_API_KEY`, `JWT_SECRET`, `AWS_S3_BUCKETNAME`, `AWS_S3_REGION` 等环境变量。Render 会自动注入数据库连接相关的环境变量。
+    *   **数据库**: 本项目配置为使用外部数据库（如 Supabase）。你需要在 Render Dashboard 中手动设置 `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` 等数据库连接环境变量。
+    *   **环境变量**: 你需要在 Render Dashboard 中手动设置 `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKETNAME`, `AWS_S3_REGION`, `JWT_SECRET`, `GEMINI_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` 等环境变量。
 6.  点击 `Create Web Service`。
 
 Render 将自动拉取代码、构建项目并部署。部署成功后，你将获得一个公开的 URL 来访问你的后端服务。

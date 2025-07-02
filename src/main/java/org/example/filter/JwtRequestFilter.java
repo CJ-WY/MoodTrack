@@ -46,6 +46,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     /**
      * 对每一个 HTTP 请求进行过滤处理的核心方法。
+     * <p>
+     * 1. 从请求头中获取 Authorization 字段。
+     * 2. 检查 Token 是否以 "Bearer " 开头，并提取 JWT 字符串。
+     * 3. 尝试解析 JWT，提取用户名。
+     * 4. 如果用户名有效且当前安全上下文中没有认证信息，则加载用户详情。
+     * 5. 验证 Token 的有效性（用户名匹配且未过期）。
+     * 6. 如果 Token 有效，则创建认证通过的 Token 并设置到 Spring Security 的安全上下文中。
+     * 7. 将请求传递给过滤器链中的下一个过滤器。
+     * </p>
      *
      * @param request     HTTP 请求对象。
      * @param response    HTTP 响应对象。
@@ -60,29 +69,43 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String username = null;
         String jwt = null;
 
+        // 1. 检查 Authorization Header 是否存在并且以 "Bearer " 开头
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7); // 截取 "Bearer " 后面的 Token 字符串
             try {
                 username = jwtUtil.extractUsername(jwt); // 从 Token 中解析出用户名
             } catch (ExpiredJwtException e) {
-                logger.warn("JWT Token has expired: {}", e.getMessage());
+                logger.warn("JWT Token 已过期: {}", e.getMessage());
+                // 可以选择在这里设置 HTTP 状态码 401 Unauthorized
+                // response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                // return;
             } catch (Exception e) {
-                logger.error("Error parsing JWT Token: {}", e.getMessage());
+                logger.error("解析 JWT Token 时发生错误: {}", e.getMessage(), e);
+                // 可以选择在这里设置 HTTP 状态码 400 Bad Request 或 401 Unauthorized
+                // response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                // return;
             }
         }
 
+        // 2. 如果成功获取到用户名，并且当前安全上下文中没有认证信息 (避免重复认证)
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            // 3. 根据用户名加载用户的详细信息 (包括权限等)
             UserDetails userDetails = this.myUserDetailsService.loadUserByUsername(username);
 
+            // 4. 验证 Token 是否有效 (用户名匹配且未过期)
             if (jwtUtil.validateToken(jwt, userDetails)) {
+                // 5. 如果 Token 有效，则创建一个认证通过的 Token
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
+                // 6. 将请求的详细信息 (如 IP 地址、Session ID) 设置到认证 Token 中
                 usernamePasswordAuthenticationToken
                         .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                // 7. 将这个认证通过的 Token 设置到 Spring Security 的安全上下文中
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-                logger.debug("User '{}' authenticated successfully.", username);
+                logger.debug("用户 '{}' 认证成功并设置安全上下文。", username);
             }
         }
+        // 8. 将请求传递给过滤器链中的下一个过滤器
         filterChain.doFilter(request, response);
     }
 }

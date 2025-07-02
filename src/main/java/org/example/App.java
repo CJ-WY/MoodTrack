@@ -22,8 +22,6 @@ public class App {
      * @param args 命令行参数，可以在应用启动时传递。
      */
     public static void main(String[] args) {
-
-
         // 启动 Spring Boot 应用程序
         SpringApplication.run(App.class, args);
     }

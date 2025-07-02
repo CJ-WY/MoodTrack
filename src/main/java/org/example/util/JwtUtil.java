@@ -2,7 +2,6 @@ package org.example.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,8 +23,9 @@ import java.util.function.Function;
 public class JwtUtil {
 
     /**
-     * JWT 签名密钥，从 application.properties 中注入。
+     * JWT 签名密钥，从系统环境变量中注入。
      * 用于对 JWT 进行签名和验证，确保 Token 的完整性和真实性。
+     * 这是一个敏感信息，应妥善保管。
      */
     @Value("#{systemEnvironment['JWT_SECRET']}")
     private String secret;
@@ -36,7 +36,7 @@ public class JwtUtil {
      * 使用 HMAC-SHA 算法生成密钥。
      * </p>
      *
-     * @return SecretKey 对象。
+     * @return {@link SecretKey} 对象。
      */
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
@@ -56,7 +56,7 @@ public class JwtUtil {
      * 从 JWT Token 中提取过期时间。
      *
      * @param token JWT 字符串。
-     * @return 提取到的过期时间 Date 对象。
+     * @return 提取到的过期时间 {@link Date} 对象。
      */
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
@@ -66,7 +66,7 @@ public class JwtUtil {
      * 从 JWT Token 中提取指定类型的 Claim (声明)。
      *
      * @param token        JWT 字符串。
-     * @param claimsResolver 用于从 Claims 对象中解析出特定值的函数。
+     * @param claimsResolver 用于从 {@link Claims} 对象中解析出特定值的函数。
      * @param <T>          Claim 的类型。
      * @return 提取到的 Claim 值。
      */
@@ -79,7 +79,7 @@ public class JwtUtil {
      * 解析 JWT Token，获取所有 Claims (声明)。
      *
      * @param token JWT 字符串。
-     * @return 包含所有声明的 Claims 对象。
+     * @return 包含所有声明的 {@link Claims} 对象。
      */
     private Claims extractAllClaims(String token) {
         return Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token).getPayload();
@@ -98,7 +98,7 @@ public class JwtUtil {
     /**
      * 根据用户详细信息生成 JWT Token。
      *
-     * @param userDetails 包含用户信息的 UserDetails 对象。
+     * @param userDetails 包含用户信息的 {@link UserDetails} 对象。
      * @return 生成的 JWT 字符串。
      */
     public String generateToken(UserDetails userDetails) {
@@ -131,7 +131,7 @@ public class JwtUtil {
      * </p>
      *
      * @param token       JWT 字符串。
-     * @param userDetails 包含用户信息的 UserDetails 对象。
+     * @param userDetails 包含用户信息的 {@link UserDetails} 对象。
      * @return 如果 Token 有效则返回 true，否则返回 false。
      */
     public Boolean validateToken(String token, UserDetails userDetails) {

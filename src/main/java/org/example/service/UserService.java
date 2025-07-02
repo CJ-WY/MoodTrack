@@ -16,8 +16,8 @@ public interface UserService {
      * 接收用户注册信息，对密码进行加密，并保存到数据库。
      * </p>
      *
-     * @param user 包含用户名、邮箱、密码等信息的 User 对象。
-     * @return 注册成功后保存到数据库的 User 对象。
+     * @param user 包含用户名、邮箱、密码等信息的 {@link User} 对象。
+     * @return 注册成功后保存到数据库的 {@link User} 对象。
      */
     User register(User user);
 
@@ -25,7 +25,31 @@ public interface UserService {
      * 根据用户名查找用户。
      *
      * @param username 用户名。
-     * @return 查找到的 User 对象，如果不存在则返回 null。
+     * @return 查找到的 {@link User} 对象，如果不存在则返回 null。
      */
     User findByUsername(String username);
+
+    /**
+     * 根据 Google ID 查找用户。
+     *
+     * @param googleId Google 提供的用户唯一 ID。
+     * @return 查找到的 {@link User} 对象，如果不存在则返回 null。
+     */
+    User findByGoogleId(String googleId);
+
+    /**
+     * 根据邮箱查找用户。
+     *
+     * @param email 用户邮箱。
+     * @return 查找到的 {@link User} 对象，如果不存在则返回 null。
+     */
+    User findByEmail(String email);
+
+    /**
+     * 保存或更新用户。
+     *
+     * @param user 需要保存或更新的 {@link User} 对象。
+     * @return 保存或更新后的 {@link User} 对象。
+     */
+    User save(User user);
 }
