@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: moodtrack-backend
+    env: java
+    plan: starter # You can choose starter, standard, or professional
+    buildCommand: ./mvnw clean install
+    startCommand: java -jar target/*.jar
+    healthCheckPath: /actuator/health # Assuming you'll add Spring Boot Actuator later for health checks
+    envVars:
+      # Database Connection (Manually set in Render Dashboard, using Supabase)
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      # AWS S3 Configuration
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_S3_BUCKETNAME
+        sync: false
+      - key: AWS_S3_REGION
+        sync: false
+      # JWT Secret
+      - key: JWT_SECRET
+        sync: false
+      # Gemini API Key
+      - key: GEMINI_API_KEY
+        sync: false
