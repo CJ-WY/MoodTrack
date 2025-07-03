@@ -8,6 +8,7 @@ import org.example.util.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -32,6 +33,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
      */
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Value("${app.oauth2.redirect-uri.frontend}")
+    private String frontendRedirectUri;
 
     /**
      * 在 OAuth2 认证成功后被调用。
@@ -73,7 +77,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         // 前端收到后，从 URL 中提取 JWT 并保存。
         // 注意：这里的重定向 URL 应该从配置中获取，或者由前端在发起 OAuth2 登录时提供。
         // 为了简化，这里硬编码了一个示例，实际应用中应更灵活。
-        String redirectUrl = "http://localhost:3000/oauth2/redirect?token=" + jwt; // 假设前端重定向地址
+        String redirectUrl = frontendRedirectUri + "?token=" + jwt;
         response.sendRedirect(redirectUrl);
     }
 }
