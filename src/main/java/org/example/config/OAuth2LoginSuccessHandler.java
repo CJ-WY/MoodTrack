@@ -7,6 +7,7 @@ import org.example.service.CustomOAuth2UserService;
 import org.example.util.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.example.service.MyUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -34,6 +35,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private MyUserDetailsService myUserDetailsService;
+
     @Value("${app.oauth2.redirect-uri.frontend}")
     private String frontendRedirectUri;
 
@@ -55,14 +59,30 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         logger.info("OAuth2 登录成功，用户: {}", authentication.getName());
 
         // 从认证对象中获取用户详情
-        // 这里的 principal 可能是 CustomOAuth2User 类型，需要进行类型转换
         UserDetails userDetails;
-        if (authentication.getPrincipal() instanceof CustomOAuth2UserService.CustomOAuth2User) {
-            userDetails = ((CustomOAuth2UserService.CustomOAuth2User) authentication.getPrincipal()).getUser();
-        } else if (authentication.getPrincipal() instanceof UserDetails) {
-            userDetails = (UserDetails) authentication.getPrincipal();
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof CustomOAuth2UserService.CustomOAuth2User) {
+            // 如果是自定义的 CustomOAuth2User，直接获取其内部的 UserDetails
+            userDetails = ((CustomOAuth2UserService.CustomOAuth2User) principal).getUser();
+        } else if (principal instanceof org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser) {
+            // 如果是 DefaultOidcUser (通常在 OpenID Connect 流程中)，通过 email 加载 UserDetails
+            org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser oidcUser =
+                    (org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser) principal;
+            String email = oidcUser.getEmail();
+            if (email == null) {
+                logger.error("DefaultOidcUser 中未找到 email 属性。");
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "认证成功后无法处理用户信息：缺少邮箱。");
+                return;
+            }
+            // 使用 MyUserDetailsService 根据 email 加载用户详情
+            // 注意：MyUserDetailsService 的 loadUserByUsername 应该能够处理 email 作为 username
+            userDetails = myUserDetailsService.loadUserByUsername(email);
+        } else if (principal instanceof UserDetails) {
+            // 如果是普通的 UserDetails (例如，通过用户名密码登录)
+            userDetails = (UserDetails) principal;
         } else {
-            logger.error("无法从认证对象中获取 UserDetails 类型。Principal 类型: {}", authentication.getPrincipal().getClass().getName());
+            logger.error("无法从认证对象中获取 UserDetails 类型。Principal 类型: {}", principal.getClass().getName());
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "认证成功后无法处理用户信息。");
             return;
         }

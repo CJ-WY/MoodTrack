@@ -38,9 +38,14 @@ public class MyUserDetailsService implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // 从数据库中根据用户名查找用户
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("未找到用户: " + username));
+        // 尝试通过用户名查找用户
+        User user = userRepository.findByUsername(username).orElse(null);
+
+        // 如果未找到，则尝试通过邮箱查找
+        if (user == null) {
+            user = userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("未找到用户: " + username));
+        }
+
         // 返回 Spring Security 框架所需的 UserDetails 对象
         // 这里我们只使用了用户名和加密后的密码，没有额外的权限信息 (空列表)
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), new ArrayList<>());
