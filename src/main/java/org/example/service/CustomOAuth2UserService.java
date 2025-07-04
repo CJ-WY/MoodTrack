@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.Map;
  * </p>
  */
 @Service
+@Transactional
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomOAuth2UserService.class);
@@ -72,19 +74,19 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 user.setUsername(username != null ? username : email); // 如果 Google 没有提供 name，则使用 email 作为用户名
                 user.setPassword(""); // OAuth2 登录的用户，密码可以为空或设置一个默认值
                 user.setRegistrationDate(LocalDateTime.now());
-                userService.save(user);
+                user = userService.save(user);
             } else {
                 // 如果通过邮箱找到了用户，但没有 Google ID，则关联 Google ID
                 logger.info("关联现有用户 {} 到 Google ID {}", user.getUsername(), googleId);
                 user.setGoogleId(googleId);
-                userService.save(user);
+                user = userService.save(user);
             }
         } else {
             // 如果通过 Google ID 找到了用户，更新其信息（例如用户名或邮箱可能已更新）
             logger.info("更新现有用户 {} 的信息", user.getUsername());
             user.setEmail(email);
             user.setUsername(username != null ? username : email);
-            userService.save(user);
+            user = userService.save(user);
         }
 
         // 4. 返回一个包含我们本地用户信息的 OAuth2User 对象
