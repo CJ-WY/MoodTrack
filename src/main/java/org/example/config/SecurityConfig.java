@@ -2,6 +2,8 @@ package org.example.config;
 
 import org.example.filter.JwtRequestFilter;
 import org.example.service.CustomOAuth2UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +26,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     /**
      * 注入自定义的 JWT 请求过滤器。
@@ -96,6 +100,13 @@ public class SecurityConfig {
                         // 这意味着服务器不会创建或使用 HttpSession，每次请求都依赖于 JWT 进行认证。
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
+
+        if (customOAuth2UserService == null) {
+            logger.error("CustomOAuth2UserService 未能成功注入到 SecurityConfig 中！");
+        }
+        if (oAuth2LoginSuccessHandler == null) {
+            logger.error("OAuth2LoginSuccessHandler 未能成功注入到 SecurityConfig 中！");
+        }
 
         // 将我们自定义的 JWT 过滤器添加到 Spring Security 的过滤器链中。
         // 它会在标准的用户名密码认证过滤器 {@link UsernamePasswordAuthenticationFilter} 之前执行，
