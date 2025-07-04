@@ -8,6 +8,7 @@ import org.example.util.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.example.service.MyUserDetailsService;
+import org.example.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -37,6 +38,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     @Autowired
     private MyUserDetailsService myUserDetailsService;
+
+    @Autowired
+    private UserService userService;
 
     @Value("${app.oauth2.redirect-uri.frontend}")
     private String frontendRedirectUri;
@@ -75,9 +79,15 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "认证成功后无法处理用户信息：缺少邮箱。");
                 return;
             }
-            // 使用 MyUserDetailsService 根据 email 加载用户详情
-            // 注意：MyUserDetailsService 的 loadUserByUsername 应该能够处理 email 作为 username
-            userDetails = myUserDetailsService.loadUserByUsername(email);
+            // 使用 UserService 根据 email 加载用户详情
+            org.example.model.User user = userService.findByEmail(email);
+            if (user == null) {
+                logger.error("通过邮箱 {} 未找到用户，但在 CustomOAuth2UserService 中应该已处理。", email);
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "认证成功后无法处理用户信息：用户不存在。");
+                return;
+            }
+            // 将我们自己的 User 对象包装成 Spring Security 的 UserDetails
+            userDetails = new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), user.getAuthorities());
         } else if (principal instanceof UserDetails) {
             // 如果是普通的 UserDetails (例如，通过用户名密码登录)
             userDetails = (UserDetails) principal;
