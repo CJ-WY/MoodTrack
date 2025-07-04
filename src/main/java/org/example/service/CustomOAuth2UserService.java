@@ -75,11 +75,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 user.setPassword(""); // OAuth2 登录的用户，密码可以为空或设置一个默认值
                 user.setRegistrationDate(LocalDateTime.now());
                 user = userService.save(user);
+                logger.info("新用户 {} (ID: {}) 已保存到数据库。", user.getEmail(), user.getId());
             } else {
                 // 如果通过邮箱找到了用户，但没有 Google ID，则关联 Google ID
                 logger.info("关联现有用户 {} 到 Google ID {}", user.getUsername(), googleId);
                 user.setGoogleId(googleId);
                 user = userService.save(user);
+                logger.info("用户 {} (ID: {}) 已关联 Google ID 并保存到数据库。", user.getEmail(), user.getId());
             }
         } else {
             // 如果通过 Google ID 找到了用户，更新其信息（例如用户名或邮箱可能已更新）
@@ -87,6 +89,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             user.setEmail(email);
             user.setUsername(username != null ? username : email);
             user = userService.save(user);
+            logger.info("用户 {} (ID: {}) 信息已更新并保存到数据库。", user.getEmail(), user.getId());
         }
 
         // 4. 返回一个包含我们本地用户信息的 OAuth2User 对象

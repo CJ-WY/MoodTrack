@@ -2,6 +2,8 @@ package org.example.service;
 
 import org.example.model.User;
 import org.example.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,8 @@ import java.time.LocalDateTime;
  */
 @Service
 public class UserServiceImpl implements UserService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     /**
      * 用户数据仓库，用于与数据库进行交互。
@@ -124,8 +128,12 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User save(User user) {
         try {
-            return userRepository.save(user);
+            logger.info("尝试保存或更新用户: {}", user.getEmail());
+            User savedUser = userRepository.save(user);
+            logger.info("用户保存成功，ID: {}", savedUser.getId());
+            return savedUser;
         } catch (Exception e) {
+            logger.error("保存或更新用户失败: {}", user.getEmail(), e);
             throw new RuntimeException("保存或更新用户失败。", e);
         }
     }
