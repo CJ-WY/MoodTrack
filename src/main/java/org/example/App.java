@@ -36,3 +36,4 @@ public class App {
         logger.info("Test Bean created!");
         return "Hello from Test Bean";
     }
+}
