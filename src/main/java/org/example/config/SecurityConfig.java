@@ -48,19 +48,13 @@ public class SecurityConfig {
     @Autowired
     private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-    /**
-     * 定义认证管理器 (AuthenticationManager) 的 Bean。
-     * <p>
-     * 这是 Spring Security 认证体系的核心，负责处理认证请求。
-     * 它会协调 {@link org.springframework.security.core.userdetails.UserDetailsService} 和 {@link PasswordEncoder} 来完成用户认证。
-     * </p>
-     *
-     * @param authenticationConfiguration Spring Security 的认证配置对象，用于获取默认的认证管理器。
-     * @return 返回一个 {@link AuthenticationManager} 实例。
-     * @throws Exception 如果配置出错，例如无法获取认证管理器。
-     */
+    public SecurityConfig() {
+        logger.info("SecurityConfig 构造函数被调用。");
+    }
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        logger.info("AuthenticationManager Bean 被创建。");
         return authenticationConfiguration.getAuthenticationManager();
     }
 
@@ -76,6 +70,17 @@ public class SecurityConfig {
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        logger.info("securityFilterChain Bean 被创建。");
+        if (customOAuth2UserService != null) {
+            logger.info("customOAuth2UserService 已成功注入，哈希码: {}", customOAuth2UserService.hashCode());
+        } else {
+            logger.error("customOAuth2UserService 未能成功注入！");
+        }
+        if (oAuth2LoginSuccessHandler != null) {
+            logger.info("oAuth2LoginSuccessHandler 已成功注入，哈希码: {}", oAuth2LoginSuccessHandler.hashCode());
+        } else {
+            logger.error("oAuth2LoginSuccessHandler 未能成功注入！");
+        }
         http
                 // 禁用 CSRF (跨站请求伪造) 保护，因为我们使用 JWT，是无状态的，所以不需要 CSRF 保护。
                 .csrf(csrf -> csrf.disable())
