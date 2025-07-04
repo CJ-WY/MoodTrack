@@ -128,9 +128,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User save(User user) {
         try {
-            logger.info("尝试保存或更新用户: {}", user.getEmail());
+            logger.info("UserServiceImpl.save 方法被调用，尝试保存或更新用户: {}", user.getEmail());
             User savedUser = userRepository.save(user);
-            logger.info("用户保存成功，ID: {}", savedUser.getId());
+            logger.info("UserServiceImpl.save 方法执行完毕，用户保存成功，ID: {}", savedUser.getId());
             return savedUser;
         } catch (Exception e) {
             logger.error("保存或更新用户失败: {}", user.getEmail(), e);

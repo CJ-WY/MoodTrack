@@ -49,6 +49,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
      */
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+        logger.info("CustomOAuth2UserService.loadUser 方法被调用。");
         // 1. 调用父类方法，获取默认的 OAuth2User 对象，其中包含了从 Google 获取到的用户信息
         OAuth2User oauth2User = super.loadUser(userRequest);
 
@@ -94,6 +95,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         // 4. 返回一个包含我们本地用户信息的 OAuth2User 对象
         // Spring Security 会使用这个对象来构建认证信息
+        logger.info("CustomOAuth2UserService.loadUser 方法执行完毕，返回 CustomOAuth2User。");
         return new CustomOAuth2User(user, oauth2User.getAttributes());
     }
 
