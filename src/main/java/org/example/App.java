@@ -2,6 +2,9 @@ package org.example;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Spring Boot 应用启动类。
@@ -12,6 +15,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 @SpringBootApplication
 public class App {
+
+    private static final Logger logger = LoggerFactory.getLogger(App.class);
 
     /**
      * 应用的主方法。
@@ -25,4 +30,9 @@ public class App {
         // 启动 Spring Boot 应用程序
         SpringApplication.run(App.class, args);
     }
-}
+
+    @Bean
+    public String testBean() {
+        logger.info("Test Bean created!");
+        return "Hello from Test Bean";
+    }
