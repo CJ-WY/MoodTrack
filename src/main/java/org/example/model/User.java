@@ -50,7 +50,6 @@ public class User implements UserDetails {
      * 用户密码。
      * 存储的是经过加密 (哈希) 后的密码，而不是明文。
      * 不能为空。
-     * 注意：对于 OAuth2 登录的用户，此字段可以为空或设置为一个默认值。
      */
     @Column(nullable = false)
     private String password;
@@ -61,14 +60,6 @@ public class User implements UserDetails {
      */
     @Column(name = "registration_date", nullable = false)
     private LocalDateTime registrationDate;
-
-    /**
-     * Google 提供的用户唯一 ID。
-     * 用于关联通过 Google OAuth2 登录的用户。
-     * 如果用户通过传统方式注册，此字段为 null。
-     */
-    @Column(name = "google_id", unique = true)
-    private String googleId;
 
     // --- UserDetails 接口实现 --- //
 

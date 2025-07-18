@@ -49,13 +49,7 @@ public class UserServiceImpl implements UserService {
     public User register(User user) {
         try {
             // 对用户密码进行加密
-            // 注意：对于 OAuth2 登录的用户，密码可能为空或设置为一个默认值
-            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-                user.setPassword(passwordEncoder.encode(user.getPassword()));
-            } else {
-                // 如果是 OAuth2 注册，可以设置一个随机或默认的加密密码
-                user.setPassword(passwordEncoder.encode("default_oauth2_password")); // 或者其他策略
-            }
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
             // 设置用户注册时间为当前时间
             user.setRegistrationDate(LocalDateTime.now());
             // 保存用户到数据库
@@ -83,22 +77,6 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 根据 Google ID 查找用户。
-     *
-     * @param googleId Google 提供的用户唯一 ID。
-     * @return 查找到的 {@link User} 对象，如果不存在则返回 null。
-     * @throws RuntimeException 如果数据库操作失败。
-     */
-    @Override
-    public User findByGoogleId(String googleId) {
-        try {
-            return userRepository.findByGoogleId(googleId).orElse(null);
-        } catch (Exception e) {
-            throw new RuntimeException("根据 Google ID 查找用户失败。", e);
-        }
-    }
-
-    /**
      * 根据邮箱查找用户。
      *
      * @param email 用户邮箱。
@@ -117,7 +95,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 保存或更新用户。
      * <p>
-     * 此方法用于保存新用户或更新现有用户的信息，特别是在 OAuth2 登录流程中。
+     * 此方法用于保存新用户或更新现有用户的信息。
      * </p>
      *
      * @param user 需要保存或更新的 {@link User} 对象。

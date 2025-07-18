@@ -29,13 +29,7 @@ public interface UserService {
      */
     User findByUsername(String username);
 
-    /**
-     * 根据 Google ID 查找用户。
-     *
-     * @param googleId Google 提供的用户唯一 ID。
-     * @return 查找到的 {@link User} 对象，如果不存在则返回 null。
-     */
-    User findByGoogleId(String googleId);
+    
 
     /**
      * 根据邮箱查找用户。

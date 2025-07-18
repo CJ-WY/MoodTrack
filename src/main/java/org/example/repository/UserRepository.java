@@ -26,16 +26,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     Optional<User> findByUsername(String username);
 
-    /**
-     * 根据 Google ID 查找用户。
-     * <p>
-     * 用于 OAuth2 登录时，根据 Google 提供的唯一 ID 查找用户。
-     * </p>
-     *
-     * @param googleId Google 提供的用户唯一 ID。
-     * @return 一个包含查找到的 {@link User} 实体的 {@link Optional} 对象，如果找不到则为空。
-     */
-    Optional<User> findByGoogleId(String googleId);
+    
 
     /**
      * 根据邮箱查找用户。
