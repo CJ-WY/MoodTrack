@@ -2,65 +2,57 @@ package org.example.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.List;
 
-/**
- * 用户每日情绪记录实体类。
- * <p>
- * 存储用户每天提交的情绪数据，包括心情描述、压力指数和体感状态等。
- * </p>
- */
 @Data
 @Entity
-@Table(name = "mood_entry")
+@Table(name = "moods")
 public class MoodEntry {
 
-    /**
-     * 情绪记录的唯一标识符 (主键)。
-     * 数据库自动生成。
-     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * 记录所属的用户。
-     * 多对一关系：多个情绪记录可以属于同一个用户。
-     * 使用 {@link FetchType#LAZY} 延迟加载，以优化性能。
-     * `nullable = false` 表示情绪记录必须关联一个用户。
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    /**
-     * 用户对当前心情的文字描述。
-     * 例如：“今天感觉很平静”、“有点沮丧”。
-     * 不能为空。
-     */
-    @Column(name = "mood_description", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "emotion_type", nullable = false)
+    private EmotionType emotionType;
+
+    @Column(name = "mood_description", length = 500)
     private String moodDescription;
 
-    /**
-     * 用户的压力指数，通常是一个从 1 到 10 的整数。
-     * 1 表示压力很小，10 表示压力很大。
-     * 不能为空。
-     */
-    @Column(name = "stress_level", nullable = false)
-    private Integer stressLevel;
+    @ElementCollection
+    @CollectionTable(name = "mood_triggers", joinColumns = @JoinColumn(name = "mood_id"))
+    @Column(name = "trigger", length = 50)
+    private List<String> triggers;
 
-    /**
-     * 用户的体感状态描述。
-     * 例如：“身体疲惫”、“精力充沛”、“头痛”。
-     * 可以为空。
-     */
-    @Column(name = "physical_state")
-    private String physicalState;
+    @Column(name = "share_to_public", nullable = false)
+    private boolean shareToPublic = true;
 
-    /**
-     * 情绪记录的时间戳。
-     * 不能为空。
-     */
+    @Column(name = "is_anonymous", nullable = false)
+    private boolean isAnonymous = false;
+
     @Column(name = "record_time", nullable = false)
-    private LocalDateTime recordTime;
+    private OffsetDateTime recordTime;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = OffsetDateTime.now();
+        updatedAt = OffsetDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = OffsetDateTime.now();
+    }
 }

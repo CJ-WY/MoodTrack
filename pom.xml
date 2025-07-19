@@ -98,11 +98,7 @@
             <version>2.10.1</version> <!-- Use a recent stable version -->
         </dependency>
 
-        <!-- Spring Boot Starter OAuth2 Client: For integrating OAuth2/OpenID Connect clients (e.g., Google Login). -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-oauth2-client</artifactId>
-        </dependency>
+        
 
         <!-- Testing Dependencies -->
         <dependency>

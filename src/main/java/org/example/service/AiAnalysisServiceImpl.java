@@ -172,18 +172,16 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
         return String.format(
                 "请你扮演一个专业的心理健康顾问。根据以下用户提交的情绪记录，进行深入分析。" +
                         "用户的记录如下：\n" +
-                        "心情描述: \"%s\"\n" +
-                        "压力指数 (1-10): %d\n" +
-                        "体感状态: \"%s\"\n\n" +
+                        "情绪类型: \"%s\"\n" +
+                        "心情描述: \"%s\"\n\n" +
                         "请严格按照以下 JSON 格式返回你的分析结果，不要添加任何额外的解释或说明文字：\n" +
                         "{\n" +
                         "  \"analysisText\": \"(这里是对用户当前情绪状态的详细分析，请专业、共情地描述)\",\n" +
                         "  \"suggestion\": \"(这里提供2-3条具体的、可操作的心理健康建议，帮助用户改善状态)\",\n" +
                         "  \"matchedTags\": [\"(这里根据分析结果，生成3-5个最相关的用户群体标签，例如：学业压力, 职场焦虑, 情绪低落, 人际关系困扰, 自我怀疑, 轻度抑郁倾向, 积极心态, 成长烦恼等)\"]\n" +
                         "}",
-                moodEntry.getMoodDescription(),
-                moodEntry.getStressLevel(),
-                moodEntry.getPhysicalState()
+                moodEntry.getEmotionType().name(),
+                moodEntry.getMoodDescription()
         );
     }
 
