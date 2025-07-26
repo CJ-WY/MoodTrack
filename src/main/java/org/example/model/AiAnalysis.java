@@ -1,58 +1,85 @@
 package org.example.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Digits;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import java.util.List;
+import lombok.NoArgsConstructor;
+import org.example.model.ai.AnalysisPatterns;
+import org.example.model.ai.AnalysisRecommendations;
+import org.example.model.ai.AnalysisSummary;
+import org.example.model.ai.RiskAssessment;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
-/**
- * Gemini 分析结果实体类
- * <p>
- * 存储由 Gemini API 对单次情绪记录分析后得出的所有信息，
- * 并通过多对多关系关联到具体的标签(Tag)。
- * </p>
- */
-@Data
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "ai_analysis")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class AiAnalysis {
 
-    /**
-     * 唯一标识符 (主键)。
-     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * 与本次分析关联的情绪记录。
-     * 使用一对一关系，确保一次情绪记录只对应一次分析。
-     */
-    @OneToOne(fetch = FetchType.LAZY) // 使用延迟加载优化性能
-    @JoinColumn(name = "mood_entry_id", nullable = false, unique = true)
-    private MoodEntry moodEntry;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
-    /**
-     * AI 生成的对用户情绪的详细文本分析。
-     */
-    @Column(name = "analysis_text", columnDefinition = "TEXT")
-    private String analysisText;
+    @Column(name = "report_id", unique = true, nullable = false)
+    private String reportId;
 
-    /**
-     * AI 针对用户当前状态提供的具体建议。
-     */
-    @Column(columnDefinition = "TEXT")
-    private String suggestion;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "analysis_type")
+    @Builder.Default
+    private AnalysisType analysisType = AnalysisType.WEEKLY;
 
-    /**
-     * AI 分析后匹配到的标签列表。
-     * 使用多对多关系，一个分析结果可以有多个标签，一个标签也可以对应多个分析结果。
-     * 中间表 `ai_analysis_tag` 会被自动创建，用于存储关联关系。
-     */
-    @ManyToMany(fetch = FetchType.EAGER) // 使用即时加载，因为通常获取分析时就需要标签
-    @JoinTable(
-            name = "ai_analysis_tag",
-            joinColumns = @JoinColumn(name = "ai_analysis_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    private List<Tag> matchedTags;
+    @Column(name = "start_date", nullable = false)
+    private LocalDate startDate;
+
+    @Column(name = "end_date", nullable = false)
+    private LocalDate endDate;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "summary_data", nullable = false, columnDefinition = "jsonb")
+    private AnalysisSummary summaryData;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "patterns_data", nullable = false, columnDefinition = "jsonb")
+    private AnalysisPatterns patternsData;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "recommendations_data", nullable = false, columnDefinition = "jsonb")
+    private AnalysisRecommendations recommendationsData;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "risk_assessment_data", nullable = false, columnDefinition = "jsonb")
+    private RiskAssessment riskAssessmentData;
+
+    @Column(name = "data_points", nullable = false)
+    private Integer dataPoints;
+
+    @Column(name = "confidence_score", nullable = false)
+    @Digits(integer = 1, fraction = 2)
+    private BigDecimal confidenceScore;
+
+    @Column(name = "api_cost")
+    @Digits(integer = 4, fraction = 4)
+    private BigDecimal apiCost;
+
+    @CreationTimestamp
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

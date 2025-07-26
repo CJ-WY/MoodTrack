@@ -20,10 +20,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-@Service
+@Service("analysisReportService")
 @Transactional
 @Slf4j
-public class AiAnalysisServiceImpl implements AiAnalysisService {
+public class AnalysisReportService {
 
     @Autowired
     private MoodEntryRepository moodEntryRepository;
@@ -36,12 +36,6 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Override
-    public AiAnalysis analyzeMood(MoodEntry moodEntry) {
-        // This is the old method, we can leave it as is or deprecate it.
-        return null;
-    }
 
     public AIAnalysisResponse generateAnalysis(AIAnalysisRequest request, User user) {
         AIAnalysisRequest processedRequest = processRequest(request);

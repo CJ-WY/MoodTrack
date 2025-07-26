@@ -49,12 +49,12 @@ public class MoodEntryServiceImpl implements MoodEntryService {
         List<MoodResponse> moodResponses = page.getContent().stream().map(this::convertToResponse).collect(Collectors.toList());
 
         PaginationInfo paginationInfo = new PaginationInfo();
-        paginationInfo.setCurrent_page(page.getNumber() + 1);
-        paginationInfo.setPer_page(page.getSize());
-        paginationInfo.setTotal_count(page.getTotalElements());
-        paginationInfo.setTotal_pages(page.getTotalPages());
-        paginationInfo.setHas_next(page.hasNext());
-        paginationInfo.setHas_prev(page.hasPrevious());
+        paginationInfo.setCurrentPage(page.getNumber() + 1);
+        paginationInfo.setPerPage(page.getSize());
+        paginationInfo.setTotalCount(page.getTotalElements());
+        paginationInfo.setTotalPages(page.getTotalPages());
+        paginationInfo.setHasNext(page.hasNext());
+        paginationInfo.setHasPrev(page.hasPrevious());
 
         PaginatedMoodResponse response = new PaginatedMoodResponse();
         response.setMoods(moodResponses);
