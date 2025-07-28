@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * JWT (JSON Web Token) 工具类。
  * <p>
@@ -39,7 +41,7 @@ public class JwtUtil {
      * @return {@link SecretKey} 对象。
      */
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
