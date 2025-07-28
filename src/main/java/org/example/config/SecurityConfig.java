@@ -70,6 +70,7 @@ public class SecurityConfig {
                         // 对以下路径的请求允许匿名访问 (无需认证)
                         // 主要包括用户认证(注册/登录)接口和 API 文档(Swagger)相关路径。
                         .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api/v1/ai-analysis/**").authenticated()
                         // 除了上面明确放行的路径，所有其他请求都必须经过认证。
                         .anyRequest().authenticated()
                 )
